@@ -184,8 +184,8 @@ def generate_launch_description():
 
 ---
 
-🎯 RViz Setup
-8.A. Create RViz Configuration File
+## 🎯 RViz Setup
+## 8.A. Create RViz Configuration File
 
 File: rviz/display.rviz
 
