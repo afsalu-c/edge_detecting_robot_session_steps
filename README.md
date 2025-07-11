@@ -185,7 +185,7 @@ def generate_launch_description():
 ---
 
 🎯 RViz Setup
-8. Create RViz Configuration File
+8.A. Create RViz Configuration File
 
 File: rviz/display.rviz
 
@@ -447,6 +447,124 @@ Window Geometry:
 ```
 
 ---
+
+Absolutely! Here's how you can write the next step (📦 **Step 22**) for your GitHub `README.md`, showing how to set up the `CMakeLists.txt` and `package.xml` for the `bot_description` package — with clear explanations and emojis:
+
+---
+
+## 📦 8.B.: Setup `CMakeLists.txt` and `package.xml` for `bot_description`
+
+This step sets up the core metadata and build configuration files for the `bot_description` package.
+
+---
+
+### 🧱 `CMakeLists.txt`
+
+Create or update your `CMakeLists.txt` inside the `bot_description` folder with the following content:
+
+```cmake
+cmake_minimum_required(VERSION 3.8)
+project(bot_description)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+
+# Install important directories like URDF, launch, rviz, etc.
+install(
+  DIRECTORY launch models urdf rviz worlds
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Optional testing support
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
+```
+
+✅ **What this does**:
+
+* Sets the CMake version and project name.
+* Enables strict compile warnings.
+* Finds the `ament_cmake` build system.
+* Installs your `launch`, `urdf`, `rviz`, `models`, and `worlds` folders.
+* Optionally sets up testing and linting tools.
+
+---
+
+### 📄 `package.xml`
+
+Add the following `package.xml` file in the same `bot_description` folder:
+
+```xml
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bot_description</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="kutkarsh706@gmail.com">utk</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Runtime dependencies -->
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+
+  <!-- Test dependencies -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+```
+
+🧾 **What this includes**:
+
+* Metadata like package name, version, maintainer, and license.
+* Declares **runtime dependencies** like `xacro`, `robot_state_publisher`, `rviz2`, and `ros_gz_sim`.
+* Adds **testing tools** under test dependencies.
+* Uses `ament_cmake` as the build tool.
+
+---
+
+### 🧪 Build & Verify
+
+Once these files are added, **build the workspace** again:
+
+```bash
+cd ~/ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+✅ Now your robot description package is fully structured and ready to be used in both RViz and Gazebo!
+
+---
+
+🧭 **Next steps?**
+
+* Add `ros_gz` launch files.
+* Spawn your robot in a Gazebo world.
+* Add controller plugins via `ros2_control`.
+
+Let me know if you'd like help writing those steps too!
 
 
 ## 🛠️ 9. Build the Workspace
