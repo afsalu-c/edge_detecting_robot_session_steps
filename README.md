@@ -2403,6 +2403,181 @@ CTRL-C to quit
 
 ✅ You should now be able to see your robot moving inside Gazebo based on your keyboard input!
 
+---
+
+---
+
+## 🚀 Step 28: Create `bot_bringup` Package to Launch Entire Stack
+
+To streamline launching your simulation, controllers, and optionally any custom scripts or RViz config, we’ll create a centralized **launch package**.
+
+---
+
+### ✅ 1. Create the bringup package
+
+```bash
+cd ~/bot_ws/src
+ros2 pkg create bot_bringup --build-type ament_cmake
+```
+
+---
+
+### ✅ 2. Create the launch folder
+
+```bash
+cd bot_bringup
+mkdir launch
+```
+
+---
+
+### ✅ 3. Create `simulated_robot.launch.py`
+
+Inside the `launch/` folder, create the file `simulated_robot.launch.py`:
+
+```python
+import os
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+def generate_launch_description():
+    world_name = LaunchConfiguration("world_name")
+
+    world_name_arg = DeclareLaunchArgument(
+        "world_name",
+        default_value="empty_table"
+    )
+
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory("bot_description"),
+            "launch",
+            "gazebo.launch.py"
+        )),
+        launch_arguments={
+            "world_name": world_name
+        }.items()
+    )
+
+    controller_only = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory("bot_controller"),
+            "launch",
+            "controller.launch.py"
+        ))
+    )
+
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        arguments=["-d", os.path.join(
+            get_package_share_directory("bot_description"),
+            "rviz",
+            "display.rviz"
+        )],
+        output="screen",
+        parameters=[{"use_sim_time": True}]
+    )
+
+    edge_avoidance_node = Node(
+        package="bot_script",
+        executable="edge_detection",
+        name="edge_avoidance_node",
+        output="screen",
+        parameters=[{"use_sim_time": True}]
+    )
+
+    return LaunchDescription([
+        world_name_arg,
+        gazebo,
+        controller_only,
+        # edge_avoidance_node,
+        rviz,
+    ])
+```
+
+Uncomment lines as needed to launch custom logic or visualization.
+
+---
+
+### ✅ 4. Update `CMakeLists.txt`
+
+```cmake
+cmake_minimum_required(VERSION 3.8)
+project(bot_bringup)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_package(ament_cmake REQUIRED)
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_package()
+```
+
+---
+
+### ✅ 5. Update `package.xml`
+
+```xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>bot_bringup</name>
+  <version>0.0.0</version>
+  <description>Launch everything for bot simulation</description>
+  <maintainer email="kutkarsh706@gmail.com">utk</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>bot_controller</exec_depend>
+  <exec_depend>bot_description</exec_depend>
+  <exec_depend>bot_script</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+```
+
+---
+
+### ✅ 6. Build and source the workspace
+
+```bash
+cd ~/bot_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+---
+
+### ✅ 7. Launch the full system from one terminal 🎯
+
+```bash
+ros2 launch bot_bringup simulated_robot.launch.py
+```
+
+You now have one command that:
+
+* Launches your robot in the Gazebo world
+* Starts the controllers
+* Optionally starts RViz and your custom script
+
+---
+
+
+
 
 
 
