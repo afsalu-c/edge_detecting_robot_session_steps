@@ -2083,6 +2083,18 @@ Open your `bot_description/urdf/gazebo.xacro` and add the following inside the `
 * Loads your **ROS 2 controllers config** from `bot_controller/config/bot_controllers.yaml`.
 * Enables **sensor support** in Ignition Gazebo.
 
+## 🧩 Include `ros2_control.xacro` in Your Main URDF
+
+Go to `bot.urdf.xacro` and include the gazebo file:
+
+```xml
+<xacro:include filename="$(find bot_description)/urdf/ros2_control.xacro"/>
+```
+
+📌 Place it below the other includes like `bot_base.xacro`, `bot_sensors.xacro` and `gazebo.xacro`
+
+---
+
 ➡️ In the next step, we’ll define the actual controllers in a YAML config and create a new `bot_controller` package.
 
 ---
