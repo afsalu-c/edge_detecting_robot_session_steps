@@ -3,7 +3,7 @@
 #### A clean, well-structured ROS 2 simulation project from scratch, ideal for workshops, personal learning, or prototyping. This walks you through every step — workspace setup, URDF creation, Gazebo simulation, ROS 2 Control, and more.
 ---
 
-# 🛠️ Build Your Own ROS2 Robot from Scratch – Workshop Starter Guide
+## 🛠️ Build Your Own ROS2 Robot from Scratch – Workshop Starter Guide
 
 Welcome to the **"Mastering ROS2 – Build an Edge-Avoiding Robot from Scratch"** workshop!
 This guide will walk you through setting up your ROS2 package and building your first robot from **scratch**, step-by-step.
