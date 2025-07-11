@@ -544,28 +544,6 @@ Add the following `package.xml` file in the same `bot_description` folder:
 
 ---
 
-### 🧪 Build & Verify
-
-Once these files are added, **build the workspace** again:
-
-```bash
-cd ~/ros2_ws
-colcon build --symlink-install
-source install/setup.bash
-```
-
-✅ Now your robot description package is fully structured and ready to be used in both RViz and Gazebo!
-
----
-
-🧭 **Next steps?**
-
-* Add `ros_gz` launch files.
-* Spawn your robot in a Gazebo world.
-* Add controller plugins via `ros2_control`.
-
-Let me know if you'd like help writing those steps too!
-
 
 ## 🛠️ 9. Build the Workspace
 
@@ -860,5 +838,349 @@ ros2 launch bot_description display.launch.py
 * A front-mounted laser sensor
 
 ---
+
+---
+
+## 🚀 Step 14: Create the `gazebo.xacro` File
+
+📁 Navigate to the `urdf` folder and create a new file called **`gazebo.xacro`**:
+
+```xml
+<?xml version="1.0" ?>
+<robot name="bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+</robot>
+```
+
+---
+
+## ⚙️ Step 15: Add Gazebo Properties for Right Wheel
+
+🔧 Inside the `<robot>` tag, add Gazebo friction and contact properties for the **right wheel**:
+
+```xml
+<!-- bot Wheels -->
+<gazebo reference="right_wheel_link">
+    <mu1>1000000000000000.0</mu1>
+    <mu2>1000000000000000.0</mu2>
+    <kp>1000000000000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
+</gazebo>
+```
+
+### 📝 Explanation:
+
+* 🔩 **mu1, mu2** – Friction coefficients (very high to prevent slipping)
+* 🧷 **kp** – Spring stiffness (high for rigid contact)
+* 🛠️ **kd** – Damping coefficient
+* 🔎 **minDepth** – Minimum depth before contact forces apply
+* ⚡ **maxVel** – Max contact velocity for stability
+* 🔁 **fdir1** – Friction direction (wheel rolling axis)
+
+---
+
+## ⚙️ Step 16: Add Gazebo Properties for Left Wheel
+
+🛞 Add the same block for the **left wheel**:
+
+```xml
+<gazebo reference="left_wheel_link">
+    <mu1>1000000000000000.0</mu1>
+    <mu2>1000000000000000.0</mu2>
+    <kp>1000000000000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
+</gazebo>
+```
+
+---
+
+## 🛞 Step 17: Add Properties for Castor Wheels
+
+⚙️ Castor wheels aren’t powered, so they use lower friction and different damping:
+
+```xml
+<!-- Caster Wheels -->
+<gazebo reference="front_castor_link">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+</gazebo>
+
+<gazebo reference="back_castor_link">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+</gazebo>
+```
+
+---
+
+## 🛰️ Step 18: Add 2D Laser Sensor Plugin
+
+📡 Add a simulated GPU-based laser scanner (LiDAR):
+
+```xml
+<!-- bot Sensors -->
+<!-- 2D Laser Sensor -->
+<gazebo reference="laser_link">
+    <sensor name="lidar" type="gpu_lidar">
+        <pose>0 0 0 1.57 0 0</pose>
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+        <topic>scan</topic>
+        <update_rate>5</update_rate>
+        <gz_frame_id>laser_link</gz_frame_id> 
+        <lidar>
+            <scan>
+                <horizontal>
+                    <samples>10</samples>
+                    <resolution>1.00000</resolution>
+                    <min_angle>-1.000000</min_angle>
+                    <max_angle>0.0</max_angle>
+                </horizontal>
+            </scan>
+            <range>
+                <min>0.05</min>
+                <max>4.0</max>
+                <resolution>0.02</resolution>
+            </range>
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.01</stddev>
+            </noise>
+        </lidar>
+    </sensor>
+</gazebo>
+```
+
+---
+
+## 🧩 Step 19: Include `gazebo.xacro` in Your Main URDF
+
+Go to `bot.urdf.xacro` and include the gazebo file:
+
+```xml
+<xacro:include filename="$(find bot_description)/urdf/gazebo.xacro"/>
+```
+
+📌 Place it below the other includes like `bot_base.xacro` and `bot_sensors.xacro`.
+
+---
+
+Here’s how you can document these steps clearly and effectively as 📘 **Step 20**, **Step 21**, and **Step 22** in your GitHub `README.md`, with emojis and explanations:
+
+---
+
+## 🚀 Step 20: Launch Your Bot in Gazebo – `gazebo.launch.py`
+
+🔧 Go to the `launch/` folder in your `bot_description` package and **create a launch file** named `gazebo.launch.py`.
+
+Paste the following code inside:
+
+```python
+import os
+from os import pathsep
+from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution, PythonExpression
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
+
+def generate_launch_description():
+    bot_description = get_package_share_directory("bot_description")
+
+    model_arg = DeclareLaunchArgument(
+        name="model", default_value=os.path.join(
+                bot_description, "urdf", "bot.urdf.xacro"
+            ),
+        description="Absolute path to robot urdf file"
+    )
+
+    world_name_arg = DeclareLaunchArgument(name="world_name", default_value="empty_table")
+
+    world_path = PathJoinSubstitution([
+            bot_description,
+            "worlds",
+            PythonExpression(expression=["'", LaunchConfiguration("world_name"), "'", " + '.world'"])
+        ]
+    )
+
+    model_path = str(Path(bot_description).parent.resolve())
+    model_path += pathsep + os.path.join(get_package_share_directory("bot_description"), 'models')
+
+    gazebo_resource_path = SetEnvironmentVariable(
+        "GZ_SIM_RESOURCE_PATH",
+        model_path
+    )
+
+    robot_description = ParameterValue(Command([
+            "xacro ",
+            LaunchConfiguration("model"),
+            " is_sim:=True",
+        ]),
+        value_type=str
+    )
+
+    robot_state_publisher_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        parameters=[{"robot_description": robot_description,
+                     "use_sim_time": True}]
+    )
+
+    gazebo = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory("ros_gz_sim"), "launch"), "/gz_sim.launch.py"]),
+                launch_arguments={
+                    "gz_args": PythonExpression(["'", world_path, " -v 4 -r'"])
+                }.items()
+             )
+
+    gz_spawn_entity = Node(
+        package="ros_gz_sim",
+        executable="create",
+        output="screen",
+        arguments=[
+            "-topic", "robot_description",
+            "-name", "bot",
+            "-x", "0.0",  
+            "-y", "0.0",  
+            "-z", "2.0",  
+            "-R", "0.0", 
+            "-P", "0.0",
+            "-Y", "0.0",
+        ],
+    )
+
+    gz_ros2_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
+        ],
+    )
+
+    return LaunchDescription([
+        model_arg,
+        world_name_arg,
+        gazebo_resource_path,
+        robot_state_publisher_node,
+        gazebo,
+        gz_spawn_entity,
+        gz_ros2_bridge,
+    ])
+```
+
+✅ This launch file:
+
+* Launches the **Gazebo simulator**
+* Loads your **robot description**
+* Spawns the robot into the world
+* Sets up **sensor bridges** for `/scan` and `/clock`
+
+---
+
+## 🧱 Step 21: Add Table Model to `models/` Folder
+
+📁 Go to the `models/` folder inside the `bot_description` package and **paste the table model folder** there.
+
+Your structure should look like this:
+
+```
+bot_description/
+├── models/
+│   └── table/       # 👈 Make sure this folder contains model.sdf and model.config
+```
+
+✅ Gazebo will load this model when the appropriate world file references it.
+
+---
+
+## 🌍 Step 22: Create an Empty World – `empty.world`
+
+📂 Go to the `worlds/` folder in the same package and **create a file** named `empty.world`.
+
+Paste the following contents inside:
+
+```xml
+<?xml version="1.0" ?>
+<sdf version="1.7">
+    <world name="empty_world">
+        <!-- Directional Light -->
+        <light type="directional" name="sun">
+            <cast_shadows>true</cast_shadows>
+            <pose>0 0 10 0 0 0</pose>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <attenuation>
+                <range>1000</range>
+                <constant>0.9</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <direction>-0.5 0.1 -0.9</direction>
+        </light>
+
+        <!-- Ground Plane -->
+        <model name="ground_plane">
+            <static>true</static>
+            <link name="link">
+                <collision name="collision">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                        </plane>
+                    </geometry>
+                </collision>
+                <visual name="visual">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>100 100</size>
+                        </plane>
+                    </geometry>
+                    <material>
+                        <ambient>0.8 0.8 0.8 1</ambient>
+                        <diffuse>0.8 0.8 0.8 1</diffuse>
+                        <specular>0.8 0.8 0.8 1</specular>
+                    </material>
+                </visual>
+            </link>
+        </model>
+    </world>
+</sdf>
+```
+
+✅ This world:
+
+* Adds a **ground plane**
+* Adds **sunlight**
+* Keeps the world clean and minimal for testing your robot
+
+---
+
+
+
+
+
+
 
 
