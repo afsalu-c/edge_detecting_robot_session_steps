@@ -2328,6 +2328,83 @@ Make sure your `package.xml` looks like this:
 
 ✅ Once all files are in place, you're ready for the next step: **building the workspace** and **launching the robot with controllers**.
 
+---
+
+---
+
+## 🕹️ Step 27: Teleoperate the Robot in Gazebo using Keyboard 🧭🧑‍💻
+
+After setting up your simulation and controllers, let’s now move to teleoperating the robot using keyboard commands via `teleop_twist_keyboard`.
+
+---
+
+### ✅ 1. Launch the robot in Gazebo
+
+In **Terminal 1**, launch the Gazebo simulation with your robot:
+
+```bash
+ros2 launch bot_description gazebo.launch.py
+```
+
+---
+
+### ✅ 2. Launch the controllers
+
+In **Terminal 2**, spawn the controller manager and robot controllers:
+
+```bash
+ros2 launch bot_controller controller.launch.py
+```
+
+---
+
+### ✅ 3. Install keyboard teleop tool (if not already installed)
+
+In **Terminal 3**, run:
+
+```bash
+sudo apt install ros-humble-teleop-twist-keyboard
+```
+
+Replace `${ROS_DISTRO}` with your ROS 2 distribution name (e.g., `humble`, `iron`, etc.).
+
+---
+
+### ✅ 4. Run the teleop node
+
+Still in **Terminal 3**, run the teleop node and remap to your robot's velocity topic:
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard \
+  --ros-args -p stamped:=false -r cmd_vel:=wheel_controller/cmd_vel_unstamped
+```
+
+---
+
+### 🕹️ 5. Control your robot using your keyboard!
+
+Once the teleop node is running, use the following keys to control the robot:
+
+```
+Moving around:
+   u    i    o
+   j    k    l
+   m    ,    .
+
+i: move forward  
+k: stop  
+,: move backward  
+j/l: turn left/right
+
+CTRL-C to quit
+```
+
+---
+
+✅ You should now be able to see your robot moving inside Gazebo based on your keyboard input!
+
+
+
 
 
 
