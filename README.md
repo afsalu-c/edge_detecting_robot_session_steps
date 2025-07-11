@@ -1,6 +1,6 @@
-#### 🚀 ROS 2 Project Starter Template
+# 🚀 ROS 2 Project Starter Template
 
-A clean, well-structured ROS 2 simulation project from scratch, ideal for workshops, personal learning, or prototyping. This walks you through every step — workspace setup, URDF creation, Gazebo simulation, ROS 2 Control, and more.
+#### A clean, well-structured ROS 2 simulation project from scratch, ideal for workshops, personal learning, or prototyping. This walks you through every step — workspace setup, URDF creation, Gazebo simulation, ROS 2 Control, and more.
 ---
 
 # 🛠️ Build Your Own ROS2 Robot from Scratch – Workshop Starter Guide
