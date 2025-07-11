@@ -2703,55 +2703,64 @@ Paste this into `bot_ws/src/bot_script/bot_script/edge_detection.py`:
 
 ```python
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
+from time import sleep
 
-
-class EdgeDetectionNode(Node):
+class EdgeAvoidanceBot(Node):
     def __init__(self):
-        super().__init__('edge_detection_node')
-        self.get_logger().info("✅ Edge Detection Node Started")
+        super().__init__('edge_avoidance_bot')
+        
+        self.publisher = self.create_publisher(Twist, '/wheel_controller/cmd_vel_unstamped', 10)
+        self.subscription = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
+        self.timer = self.create_timer(0.1, self.control_loop)
+        self.cmd_vel = Twist()
 
-        # Publisher to cmd_vel
-        self.cmd_pub = self.create_publisher(Twist, '/wheel_controller/cmd_vel_unstamped', 10)
+        self.up = 0.0
+        self.down = 0.0
 
-        # Subscriber to LaserScan (for edge or cliff detection)
-        self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
+        self.flag = False
 
-        # Movement command
-        self.cmd = Twist()
+    def lidar_callback(self, msg):
+        # Extract ranges
+        ranges = msg.ranges
+        valid_ranges = [r if r > 0.05 and r < 4.0 else 4.0 for r in ranges]
 
-    def scan_callback(self, msg):
-        # Example: If front distance is too low or too high (simulating cliff/edge), stop
-        front_ranges = msg.ranges[len(msg.ranges)//2 - 5 : len(msg.ranges)//2 + 5]
-        front_distance = min(front_ranges)
+        self.up = valid_ranges[6]
+        self.down = valid_ranges[2]
+        #print(len(valid_ranges))
 
-        if front_distance > msg.range_max - 0.1:
-            self.get_logger().warn("🚧 Cliff/Edge Detected! Stopping.")
-            self.cmd.linear.x = 0.0
-            self.cmd.angular.z = 0.0
+        # Log the regions
+        self.get_logger().info(f"Distances - U: {self.up:.2f}, - D: {self.down:.2f}")
+
+    def control_loop(self):
+        # Default forward motion
+        self.cmd_vel.linear.x = 0.3
+        self.cmd_vel.angular.z = 0.0
+
+        #Edge Detection
+        if self.down > 0.50:
+            self.flag = True #Edge Detected
+
+        if self.flag == True and self.up > 0.60:
+            self.cmd_vel.linear.x = -0.4
+            self.cmd_vel.angular.z = -1.65
+            self.get_logger().info("Edge ahead! Reversing and turning.")
         else:
-            # Move forward
-            self.cmd.linear.x = 0.3
-            self.cmd.angular.z = 0.0
+            self.flag = False
 
-        self.cmd_pub.publish(self.cmd)
 
+
+        # Send command
+        self.publisher.publish(self.cmd_vel)
 
 def main(args=None):
     rclpy.init(args=args)
-    node = EdgeDetectionNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
-
+    bot = EdgeAvoidanceBot()
+    rclpy.spin(bot)
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
