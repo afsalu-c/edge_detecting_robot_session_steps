@@ -1966,6 +1966,45 @@ Paste the following contents inside:
 
 ---
 
+---
+
+## 🏗️ Step 24: Build & Launch the Simulation
+
+### 🔨 1. Build your workspace
+
+Make sure you are in the root of your ROS 2 workspace (e.g., `~/bot_ws`) and then run:
+
+```bash
+colcon build --packages-select bot_description
+```
+
+After building, **source your workspace**:
+
+```bash
+source install/setup.bash
+```
+
+### 🚀 2. Launch the robot in Gazebo with the table
+
+Run the following launch command:
+
+```bash
+ros2 launch bot_description gazebo.launch.py
+```
+
+✅ What happens now:
+
+* 🌍 The **`empty.world`** is loaded into Gazebo.
+* 🪑 The **table model** from the `models/` folder is auto-loaded.
+* 🤖 The **robot** spawns **on top of the table** using the `z=2.0` value set in the `gazebo.launch.py` file.
+* 📡 The `/scan` and `/clock` topics are bridged for Gazebo–ROS 2 communication.
+
+---
+
+🎉 You should now see your robot standing proudly on the table inside Gazebo!
+
+
+
 
 
 
