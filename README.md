@@ -2085,6 +2085,239 @@ Open your `bot_description/urdf/gazebo.xacro` and add the following inside the `
 
 ➡️ In the next step, we’ll define the actual controllers in a YAML config and create a new `bot_controller` package.
 
+---
+
+---
+
+## 🧭 Step 26: Create and Configure the `bot_controller` Package 🎮🤖
+
+### 🛠️ 1. Create the `bot_controller` package
+
+In your ROS 2 workspace (`bot_ws/src`), run the following command to create a new package:
+
+```bash
+ros2 pkg create bot_controller --build-type ament_cmake
+```
+
+---
+
+### 📁 2. Create necessary folders
+
+Navigate to the new package and create two directories:
+
+```bash
+cd bot_controller
+mkdir config launch
+```
+
+---
+
+### 📝 3. Add controller config YAML
+
+Inside the `config` folder, create a file named:
+
+```
+bot_controllers.yaml
+```
+
+Paste the following contents:
+
+```yaml
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    wheel_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+wheel_controller:
+  ros__parameters:
+    type: diff_drive_controller/DiffDriveController
+
+    use_stamped_vel: false
+    left_wheel_names  : ['left_wheel_joint']
+    right_wheel_names : ['right_wheel_joint']
+
+    publish_rate: 50.0
+    wheel_separation : 0.55
+    wheel_radius : 0.15
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    cmd_vel_timeout: 0.5
+    base_frame_id: base_footprint
+    publish_limited_velocity: true
+    publish_wheel_data: true
+    enable_odom_tf: true
+
+    linear:
+      x:
+        has_velocity_limits    : true
+        max_velocity           : 1.0
+        min_velocity           : -1.0
+        has_acceleration_limits: true
+        max_acceleration       : 1.0
+        min_acceleration       : -1.0
+        has_jerk_limits        : false
+        max_jerk               : 0.5
+
+    angular:
+      z:
+        has_velocity_limits    : true
+        max_velocity           : 2.5
+        min_velocity           : -2.5
+        has_acceleration_limits: true
+        max_acceleration       : 2.5
+        min_acceleration       : -2.5
+        has_jerk_limits        : false
+        max_jerk               : 2.24
+```
+
+---
+
+### 🚀 4. Create a launch file
+
+In the `launch/` folder, create:
+
+```
+controller.launch.py
+```
+
+Paste the following code:
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "joint_state_broadcaster",
+            "--controller-manager",
+            "/controller_manager",
+        ],
+    )
+
+    wheel_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "wheel_controller", 
+            "--controller-manager", 
+            "/controller_manager"
+        ],
+    )
+
+    return LaunchDescription([
+        joint_state_broadcaster_spawner,
+        wheel_controller_spawner,
+    ])
+```
+
+---
+
+### ⚙️ 5. Configure `CMakeLists.txt`
+
+Update your `CMakeLists.txt` as follows:
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(bot_controller)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(twist_mux_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
+
+include_directories(include)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+install(
+  DIRECTORY include
+  DESTINATION include
+)
+
+install(
+  DIRECTORY launch config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_package()
+```
+
+---
+
+### 📦 6. Update `package.xml`
+
+Make sure your `package.xml` looks like this:
+
+```xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>bot_controller</name>
+  <version>0.0.0</version>
+  <description>bot Controller Package</description>
+  <maintainer email="kutkarsh706@gmail.com">Utkarsh</maintainer>
+  <license>Apache 2.0</license>
+  <author email="kutkarsh706@gmail.com">utk</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+  <depend>eigen</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>twist_mux_msgs</depend>
+  <depend>rclcpp_action</depend>
+  
+  <exec_depend>tf_transformations</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>ros2_controllers</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+```
+
+---
+
+✅ Once all files are in place, you're ready for the next step: **building the workspace** and **launching the robot with controllers**.
+
+
+
 
 
 
