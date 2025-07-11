@@ -979,9 +979,6 @@ Go to `bot.urdf.xacro` and include the gazebo file:
 📌 Place it below the other includes like `bot_base.xacro` and `bot_sensors.xacro`.
 
 ---
-
-Here’s how you can document these steps clearly and effectively as 📘 **Step 20**, **Step 21**, and **Step 22** in your GitHub `README.md`, with emojis and explanations:
-
 ---
 
 ## 🚀 Step 20: Launch Your Bot in Gazebo – `gazebo.launch.py`
