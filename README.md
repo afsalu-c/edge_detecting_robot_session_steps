@@ -2003,6 +2003,90 @@ ros2 launch bot_description gazebo.launch.py
 
 🎉 You should now see your robot standing proudly on the table inside Gazebo!
 
+---
+Here's how you can document **🧭 Step 25** in your `README.md` to **add controllers to your robot using `ros2_control`** and integrate them in the simulation using `ign_ros2_control`.
+
+---
+
+## ⚙️ Step 25: Add Controllers using `ros2_control` 🛠️
+
+### 🧾 1. Create `ros2_control.xacro` in `urdf/` folder
+
+Inside your `bot_description/urdf/` folder, create a file named:
+
+```
+ros2_control.xacro
+```
+
+Paste the following contents into it:
+
+```xml
+<?xml version="1.0"?>
+<robot name="bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="is_sim" default="true"/>
+
+  <ros2_control name="RobotSystem" type="system">
+
+    <xacro:property name="PI" value="3.14159265359" />
+
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+
+    <joint name="right_wheel_joint">
+      <command_interface name="velocity">
+        <param name="min">-4.5</param>
+        <param name="max">4.5</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+
+    <joint name="left_wheel_joint">
+      <command_interface name="velocity">
+        <param name="min">-4.5</param>
+        <param name="max">4.5</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+
+  </ros2_control>
+
+</robot>
+```
+
+🧩 This file defines the **hardware interface** using the `IgnitionSystem` plugin and adds **velocity control** for both drive joints.
+
+---
+
+### 🧬 2. Add the control plugin in `gazebo.xacro`
+
+Open your `bot_description/urdf/gazebo.xacro` and add the following inside the `<robot>` tag (but outside of any `<link>` or `<gazebo reference>` tags):
+
+```xml
+<!-- ROS 2 Control -->
+<gazebo>
+    <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <parameters>$(find bot_controller)/config/bot_controllers.yaml</parameters>
+    </plugin>
+
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+        <render_engine>ogre2</render_engine>
+    </plugin>
+</gazebo>
+```
+
+📌 This plugin:
+
+* Loads your **ROS 2 controllers config** from `bot_controller/config/bot_controllers.yaml`.
+* Enables **sensor support** in Ignition Gazebo.
+
+➡️ In the next step, we’ll define the actual controllers in a YAML config and create a new `bot_controller` package.
+
+
+
 
 
 
