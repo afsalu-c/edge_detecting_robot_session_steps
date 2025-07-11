@@ -2575,6 +2575,239 @@ You now have one command that:
 * Optionally starts RViz and your custom script
 
 ---
+---
+
+## 🤖 Step 29: Create `bot_script` Package (for Custom Logic like Edge Detection)
+
+We'll now create a Python-based ROS 2 package to run robot logic nodes — such as edge detection, obstacle avoidance, or navigation scripts.
+
+---
+
+### ✅ 1. Create the package
+
+```bash
+cd ~/bot_ws/src
+ros2 pkg create bot_script --build-type ament_python
+```
+
+---
+
+### ✅ 2. Create the edge detection script
+
+Go into the Python module folder and add the script:
+
+```bash
+cd bot_script/bot_script
+touch edge_detection.py __init__.py
+```
+
+Make both files executable:
+
+```bash
+chmod +x edge_detection.py __init__.py
+```
+
+> You'll add logic inside `edge_detection.py` later.
+
+---
+
+### ✅ 3. Edit `package.xml`
+
+Update the contents of `bot_script/package.xml`:
+
+```xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>bot_script</name>
+  <version>0.0.0</version>
+  <description>Edge detection and behavior scripts for the bot</description>
+  <maintainer email="kutkarsh706@gmail.com">utk</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>gazebo_msgs</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
+```
+
+---
+
+### ✅ 4. Edit `setup.py`
+
+Replace `bot_script/setup.py` with:
+
+```python
+from setuptools import find_packages, setup
+
+package_name = 'bot_script'
+
+setup(
+    name=package_name,
+    version='0.0.0',
+    packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='utk',
+    maintainer_email='kutkarsh706@gmail.com',
+    description='Edge detection and bot behavior logic',
+    license='Apache-2.0',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'edge_detection = bot_script.edge_detection:main',
+        ],
+    },
+)
+```
+
+---
+
+### ✅ 5. Final folder structure (recap)
+
+```bash
+bot_ws/src/bot_script/
+├── bot_script/
+│   ├── __init__.py
+│   └── edge_detection.py
+├── package.xml
+└── setup.py
+```
+
+---
+
+
+✅ You're now ready to implement the logic inside `edge_detection.py` in the next step!
+
+---
+
+## ✅ Step 30: Write Final Edge Detection Node and Run Complete Project
+
+---
+
+### 🧠 1. Final `edge_detection.py` Node
+
+Paste this into `bot_ws/src/bot_script/bot_script/edge_detection.py`:
+
+```python
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
+
+
+class EdgeDetectionNode(Node):
+    def __init__(self):
+        super().__init__('edge_detection_node')
+        self.get_logger().info("✅ Edge Detection Node Started")
+
+        # Publisher to cmd_vel
+        self.cmd_pub = self.create_publisher(Twist, '/wheel_controller/cmd_vel_unstamped', 10)
+
+        # Subscriber to LaserScan (for edge or cliff detection)
+        self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
+
+        # Movement command
+        self.cmd = Twist()
+
+    def scan_callback(self, msg):
+        # Example: If front distance is too low or too high (simulating cliff/edge), stop
+        front_ranges = msg.ranges[len(msg.ranges)//2 - 5 : len(msg.ranges)//2 + 5]
+        front_distance = min(front_ranges)
+
+        if front_distance > msg.range_max - 0.1:
+            self.get_logger().warn("🚧 Cliff/Edge Detected! Stopping.")
+            self.cmd.linear.x = 0.0
+            self.cmd.angular.z = 0.0
+        else:
+            # Move forward
+            self.cmd.linear.x = 0.3
+            self.cmd.angular.z = 0.0
+
+        self.cmd_pub.publish(self.cmd)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = EdgeDetectionNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+---
+
+### ✅ 2. Rebuild the Workspace
+
+After saving the script:
+
+```bash
+cd ~/bot_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+---
+
+### 🚀 3. Launch the Full Project
+
+#### Terminal 1: Launch Simulation + Controllers via `bot_bringup`
+
+```bash
+ros2 launch bot_bringup simulated_robot.launch.py
+```
+
+#### Terminal 2: Run Edge Detection Logic
+
+```bash
+ros2 run bot_script edge_detection
+```
+
+✅ Your robot will now **automatically stop near edges/cliffs** detected using `/scan` data, and otherwise drive forward. You can integrate additional logic later (like rotating on edge detection, etc.).
+
+---
+
+### 🎉 Project Completed in 30 Steps!
+
+You now have a:
+
+* ✅ Fully simulated Gazebo robot on a table
+* ✅ Integrated ROS 2 Control with diff drive
+* ✅ Keyboard teleop support
+* ✅ Custom edge detection script reacting to lidar
+* ✅ One-command launch via bringup file
+
+---
+
+### Congratulations on completing this build! 🥳
+
+---
+
+
 
 
 
