@@ -62,7 +62,12 @@ Go to the `urdf` folder in VS Code and create a file named `bot_base.xacro`. Add
 
 ```xml
 <?xml version="1.0" ?>
-<robot name="bot" xmlns:xacro="http://www.ros.org/wiki/xacro"></robot>
+<robot name="bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<!--add to below-->
+
+
+
+</robot>
 ```
 
 ### Step 2: Add `base_footprint` link
