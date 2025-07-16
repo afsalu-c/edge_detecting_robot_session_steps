@@ -688,7 +688,7 @@ ros2 launch bot_description display.launch.py
   <visual>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <geometry>
-      <sphere radius="0.045"/>
+      <sphere radius="0.05"/>
     </geometry>
     <material name="black">
       <color rgba="0.0 0.0 0.0 1.0"/>
@@ -697,7 +697,7 @@ ros2 launch bot_description display.launch.py
   <collision>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <geometry>
-      <sphere radius="0.045"/>
+      <sphere radius="0.05"/>
     </geometry>
   </collision>
 </link>
@@ -722,7 +722,7 @@ ros2 launch bot_description display.launch.py
   <visual>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <geometry>
-      <sphere radius="0.045"/>
+      <sphere radius="0.05"/>
     </geometry>
     <material name="black">
       <color rgba="0.0 0.0 0.0 1.0"/>
@@ -731,7 +731,7 @@ ros2 launch bot_description display.launch.py
   <collision>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <geometry>
-      <sphere radius="0.045"/>
+      <sphere radius="0.05"/>
     </geometry>
   </collision>
 </link>
