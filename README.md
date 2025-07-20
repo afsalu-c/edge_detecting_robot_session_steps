@@ -1,8 +1,8 @@
 # 🚀 ROS 2 Project Starter Template
 
-## session video link [here]([url](https://youtu.be/luZq317FUrE?feature=shared))
+* session video link [here]([url](https://youtu.be/luZq317FUrE?feature=shared))
 
-## complete github repo [here]([url](https://github.com/Curious-Utkarsh/bot_ws))
+* complete github repo [here]([url](https://github.com/Curious-Utkarsh/bot_ws))
 
 #### A clean, well-structured ROS 2 simulation project from scratch, ideal for workshops, personal learning, or prototyping. This walks you through every step — workspace setup, URDF creation, Gazebo simulation, ROS 2 Control, and more.
 ---
