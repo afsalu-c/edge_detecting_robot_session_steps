@@ -2380,7 +2380,13 @@ Replace `${ROS_DISTRO}` with your ROS 2 distribution name (e.g., `humble`, `iron
 
 ### ✅ 4. Run the teleop node
 
-Still in **Terminal 3**, run the teleop node and remap to your robot's velocity topic:
+Still in **Terminal 3**, run the teleop node and remap to your robot's velocity topic
+Note:✅ cmd_vel_unstamped is:
+A topic that carries velocity commands (like forward, turn left, etc.)
+
+Message type: geometry_msgs/msg/Twist
+
+Used by controllers (like diff_drive_controller) that expect this simpler, unstamped format
 
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard \
