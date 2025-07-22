@@ -2043,11 +2043,11 @@ Paste the following contents into it:
     </hardware>
 
     <joint name="right_wheel_joint">
-      <command_interface name="velocity">
+      <command_interface name="velocity"> <!-- command we give is velocity -->
         <param name="min">-4.5</param>
         <param name="max">4.5</param>
       </command_interface>
-      <state_interface name="position" />
+      <state_interface name="position" /> <!-- system interface is (what we get back from encoder is position and velocity -->
       <state_interface name="velocity" />
     </joint>
 
