@@ -1,6 +1,6 @@
 # 🚀 ROS 2 Project Starter Template
 
-* Note: This repository is forked from and cusomized for **ROS2 Jazzy with Gazebo Harmonic**
+* Note: This repository is forked from [here](https://github.com/Curious-Utkarsh/session_steps) and cusomized for **ROS2 Jazzy with Gazebo Harmonic**
 
 * Session video link [here](https://youtu.be/luZq317FUrE?feature=shared)
 
